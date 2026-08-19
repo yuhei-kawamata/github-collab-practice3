@@ -9,7 +9,7 @@ class UserController extends Controller
 {
   public function index()
   {
-    $users = User::all();
+    $users = User::latest()->pagenate(20);
     return view('users.index', ['users' => $users]);
   }
 
@@ -17,11 +17,15 @@ class UserController extends Controller
   {
     $validated = $request->validate([
       'name' => 'required|string|max:255',
-      'email' => 'requied|email',
-      'password' => 'required',
+      'email' => 'requied|email|unique:users',
+      'password' => 'required|min:8',
     ]);
 
-    User::create($validated);
+    User::create([
+      'name' => $validated['name'],
+      'email' => $validated['email'],
+      'password' => Hash::make($validated['password']),
+    ]);
 
     return redirect('/users');
   }
